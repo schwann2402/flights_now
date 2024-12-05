@@ -1,8 +1,22 @@
 /* eslint-disable react/prop-types */
-import { Card, CardContent, Collapse, Typography, Box } from "@mui/material";
+import {
+  Button,
+  Card,
+  CardContent,
+  Collapse,
+  Typography,
+  Box,
+} from "@mui/material";
 import { useState } from "react";
 
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import CircleIcon from "@mui/icons-material/Circle";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import {
+  AirlineSeatLegroomNormal,
+  PhoneIphone,
+  Usb,
+} from "@mui/icons-material";
 
 const Flight = ({ flight }) => {
   const [expanded, setExpanded] = useState(false);
@@ -108,6 +122,11 @@ const Flight = ({ flight }) => {
         <Typography variant="body2" color="text.secondary">
           round trip
         </Typography>
+        {expanded && (
+          <Button variant="contained" sx={{ borderRadius: 5 }}>
+            Select flight
+          </Button>
+        )}
         <KeyboardArrowDownIcon
           sx={{
             "&:hover": {
@@ -120,11 +139,67 @@ const Flight = ({ flight }) => {
         />
       </CardContent>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
-        <CardContent sx={{ display: "flex" }}>
-          <Typography>
-            Additional flight details go here. This could include information
-            about the aircraft, in-flight amenities, baggage allowance, etc.
-          </Typography>
+        <CardContent
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            paddingX: 10,
+          }}
+        >
+          {" "}
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Box sx={{ display: "flex", flexDirection: "column" }}>
+              <CircleIcon />
+              <MoreVertIcon />
+              <CircleIcon />
+            </Box>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+              <Typography>
+                {" "}
+                {departureTime}
+                {parseInt(departureTime.slice(0, 3)) >= 12 ? "PM" : "AM"} -{" "}
+                {flight.legs[0].origin.name} ({originCode})
+              </Typography>
+              <Typography variant="subtitle" color="lightgray">
+                Travel time: {duration}
+              </Typography>
+              <Typography>
+                {arrivalTime}
+                {parseInt(arrivalTime.slice(0, 3)) >= 12 ? "PM" : "AM"} -{" "}
+                {flight.legs[0].destination.name} ({destinationCode})
+                <Typography
+                  sx={{
+                    display: "flex",
+                    gap: 2,
+                    fontSize: "11px",
+                    color: "lightblue",
+                  }}
+                >
+                  {airline}
+                  <Typography sx={{ fontSize: "inherit" }}>
+                    Flight Number {flight.legs[0].segments[0].flightNumber}
+                  </Typography>
+                </Typography>
+              </Typography>
+            </Box>
+          </Box>
+          <Box>
+            <Typography
+              sx={{
+                display: "inline-block",
+              }}
+            >
+              <AirlineSeatLegroomNormal /> Below average legroom (29in){" "}
+            </Typography>
+            <Typography>
+              <Usb />
+              In-seat USB outlet{" "}
+            </Typography>
+            <Typography>
+              <PhoneIphone />
+              Stream media to your device
+            </Typography>
+          </Box>
         </CardContent>
       </Collapse>
     </Card>

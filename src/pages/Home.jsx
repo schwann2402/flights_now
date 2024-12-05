@@ -23,7 +23,7 @@ import {
   ThemeProvider,
   createTheme,
 } from "@mui/material";
-import { SwapHoriz, FilterList, KeyboardArrowDown } from "@mui/icons-material";
+import { SwapHoriz } from "@mui/icons-material";
 
 const darkTheme = createTheme({
   palette: {
@@ -193,7 +193,13 @@ export default function FlightSearch({ setResults, setIsLoading }) {
               value={origin}
             />
             <IconButton>
-              <SwapHoriz />
+              <SwapHoriz
+                onClick={() => {
+                  let a = origin;
+                  setOrigin(destination);
+                  setDestination(a);
+                }}
+              />
             </IconButton>
             <Autocomplete
               disablePortal
@@ -249,31 +255,6 @@ export default function FlightSearch({ setResults, setIsLoading }) {
             </Box>
           </Box>
         </Paper>
-
-        <Box sx={{ display: "flex", gap: 1, mb: 3, justifyContent: "center" }}>
-          <Button startIcon={<FilterList />} variant="outlined" size="small">
-            All filters
-          </Button>
-          {[
-            "Stops",
-            "Airlines",
-            "Bags",
-            "Price",
-            "Times",
-            "Emissions",
-            "Connecting airports",
-            "Duration",
-          ].map((filter) => (
-            <Button
-              key={filter}
-              endIcon={<KeyboardArrowDown />}
-              variant="outlined"
-              size="small"
-            >
-              {filter}
-            </Button>
-          ))}
-        </Box>
       </Box>
     </ThemeProvider>
   );

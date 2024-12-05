@@ -1,6 +1,10 @@
-import axios from "axios";
+import Axios from "axios";
+import { setupCache } from "axios-cache-interceptor";
 
 const baseUrl = "https://sky-scrapper.p.rapidapi.com/api/";
+
+const instance = Axios.create();
+const axios = setupCache(instance);
 
 const getAirportOptions = async (location) => {
   const response = await axios.get(
@@ -52,6 +56,7 @@ const getFlightDetails = async (origin, destination, date, returnDate) => {
       },
     }
   );
+  console.log(response);
   return response;
 };
 
