@@ -2,9 +2,23 @@ import axios from "axios";
 
 const baseUrl = "https://sky-scrapper.p.rapidapi.com/api/";
 
-const getAirportId = async (airportCode) => {
+const getAirportOptions = async (location) => {
   const response = await axios.get(
-    baseUrl + `v1/flights/searchAirport?query=${airportCode}&localte=en-US`,
+    baseUrl + `v1/flights/searchAirport?query=${location}&localte=en-US`,
+    {
+      headers: {
+        "x-rapidapi-key": import.meta.env.VITE_API_KEY,
+        "x-rapidapi-host": import.meta.env.VITE_API_HOST,
+      },
+    }
+  );
+  const result = response.data.data.map((flight) => flight.presentation);
+  return result;
+};
+
+const getAirportId = async (location) => {
+  const response = await axios.get(
+    baseUrl + `v1/flights/searchAirport?query=${location}&localte=en-US`,
     {
       headers: {
         "x-rapidapi-key": import.meta.env.VITE_API_KEY,
@@ -14,10 +28,10 @@ const getAirportId = async (airportCode) => {
   );
 
   const skyId = response.data.data.find(
-    (airport) => airport.skyId === airportCode
+    (airport) => airport.presentation.title === location.trim()
   ).skyId;
   const entityId = response.data.data.find(
-    (airport) => airport.skyId === airportCode
+    (airport) => airport.presentation.title === location.trim()
   ).entityId;
 
   return [skyId, entityId];
@@ -41,4 +55,4 @@ const getFlightDetails = async (origin, destination, date, returnDate) => {
   return response;
 };
 
-export { getAirportId, getFlightDetails };
+export { getAirportId, getFlightDetails, getAirportOptions };

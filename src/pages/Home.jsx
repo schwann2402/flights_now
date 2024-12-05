@@ -1,13 +1,16 @@
 /* eslint-disable react/prop-types */
 "use client";
 
-import airportData from "../assets/airports.json";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { useEffect, useState } from "react";
-import { getAirportId, getFlightDetails } from "../services/flightService";
-
+import { useEffect, useState, useMemo } from "react";
+import {
+  getAirportId,
+  getAirportOptions,
+  getFlightDetails,
+} from "../services/flightService";
+import { debounce } from "@mui/material/utils";
 import {
   Autocomplete,
   IconButton,
@@ -32,27 +35,100 @@ const darkTheme = createTheme({
 });
 
 export default function FlightSearch({ setResults, setIsLoading }) {
-  const [cities, setCities] = useState([]);
   const [origin, setOrigin] = useState("");
+  const [originInputValue, setOriginInputValue] = useState("");
   const [destination, setDestination] = useState("");
+  const [destinationInputValue, setDestinationInputValue] = useState("");
   const [departureDate, setDepartureDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
+  const [destinationOptions, setDestinationOptions] = useState([]);
+  const [originOptions, setOriginOptions] = useState([]);
+
+  const fetch = useMemo(
+    () =>
+      debounce(async (input, callback) => {
+        try {
+          const response = await getAirportOptions(input);
+          callback(response);
+        } catch (error) {
+          console.log("Error fetching location", error);
+          callback([]);
+        }
+      }, 400),
+    []
+  );
 
   useEffect(() => {
-    const places = [
-      ...new Set(
-        airportData.map((airport) => airport.city + ": " + airport.name)
-      ),
-    ];
-    setCities(places);
-  }, []);
+    let active = true;
+
+    if (originInputValue === "") {
+      setOriginOptions(origin ? [origin] : []);
+      return undefined;
+    }
+
+    fetch(originInputValue, (results) => {
+      if (active) {
+        let newOptions = [];
+
+        if (origin) {
+          newOptions = [origin];
+        }
+
+        if (results) {
+          newOptions = [...newOptions, ...results];
+        }
+
+        setOriginOptions(newOptions);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [origin, originInputValue, fetch]);
+
+  useEffect(() => {
+    let active = true;
+
+    if (destinationInputValue === "") {
+      setDestinationOptions(destination ? [destination] : []);
+      return undefined;
+    }
+
+    fetch(destinationInputValue, (results) => {
+      if (active) {
+        let newOptions = [];
+
+        if (destination) {
+          newOptions = [destination];
+        }
+
+        if (results) {
+          newOptions = [...newOptions, ...results];
+        }
+
+        setDestinationOptions(newOptions);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [destination, destinationInputValue, fetch]);
+
+  const getOptionLabel = (option) => {
+    if (typeof option === "string") {
+      return option;
+    }
+    return option.suggestionTitle ? option.suggestionTitle : "";
+  };
 
   const handleSearch = async (event) => {
     setResults([]);
     setIsLoading(true);
     event.preventDefault();
-    const originInfo = await getAirportId(origin);
-    const destinationInfo = await getAirportId(destination);
+    const originInfo = await getAirportId(origin.title);
+    const destinationInfo = await getAirportId(destination.title);
     const flightDetails = await getFlightDetails(
       originInfo,
       destinationInfo,
@@ -89,44 +165,73 @@ export default function FlightSearch({ setResults, setIsLoading }) {
           <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
             <Autocomplete
               disablePortal
-              options={cities}
+              options={originOptions}
+              getOptionLabel={getOptionLabel}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  <div>
+                    <div>{option.suggestionTitle}</div>
+                    {option.subtitle && (
+                      <div style={{ fontSize: "0.8em", color: "white" }}>
+                        {option.subtitle}
+                      </div>
+                    )}
+                  </div>
+                </li>
+              )}
               sx={{ flexGrow: 1 }}
               renderInput={(params) => <TextField {...params} label="From" />}
-              onChange={() => {
-                const [city, name] = event.target.innerHTML
-                  .split(":")
-                  .map((str) => str.trim());
-                const result = airportData.filter(
-                  (airport) => airport.city === city && airport.name === name
-                )[0];
-                setOrigin(result.iata_code);
+              onChange={(event, newValue) => {
+                setOriginOptions(
+                  newValue ? [newValue, ...originOptions] : originOptions
+                );
+                setOrigin(newValue);
               }}
+              onInputChange={(event, newInputValue) => {
+                setOriginInputValue(newInputValue);
+              }}
+              value={origin}
             />
             <IconButton>
               <SwapHoriz />
             </IconButton>
             <Autocomplete
               disablePortal
-              options={cities}
+              options={destinationOptions}
+              getOptionLabel={getOptionLabel}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  <div>
+                    <div>{option.suggestionTitle}</div>
+                    {option.subtitle && (
+                      <div style={{ fontSize: "0.8em", color: "white" }}>
+                        {option.subtitle}
+                      </div>
+                    )}
+                  </div>
+                </li>
+              )}
               sx={{ flexGrow: 1 }}
               renderInput={(params) => <TextField {...params} label="To" />}
-              onChange={() => {
-                const [city, name] = event.target.innerHTML
-                  .split(":")
-                  .map((str) => str.trim());
-                const result = airportData.filter(
-                  (airport) => airport.city === city && airport.name === name
-                )[0];
-                setDestination(result.iata_code);
+              onChange={(event, newValue) => {
+                setDestinationOptions(
+                  newValue
+                    ? [newValue, ...destinationOptions]
+                    : destinationOptions
+                );
+                setDestination(newValue);
               }}
+              onInputChange={(event, newInputValue) => {
+                setDestinationInputValue(newInputValue);
+              }}
+              value={destination}
             />
-
             <Box sx={{ display: "flex", gap: 1 }}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
                   label="Departure"
-                  onChange={(event) => {
-                    const formattedDate = event.$d.toISOString().split("T")[0];
+                  onChange={(date) => {
+                    const formattedDate = date.toISOString().split("T")[0];
                     setDepartureDate(formattedDate);
                   }}
                 />

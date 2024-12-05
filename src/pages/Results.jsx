@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 
 import Flight from "../components/Flight";
 
@@ -9,9 +9,6 @@ const Results = ({ flights }) => {
   }
   return (
     <Box maxWidth="lg" sx={{ margin: "auto" }}>
-      <Typography variant="subtitle1" color="primary" sx={{ mb: 2 }}>
-        Choose your departing flight
-      </Typography>
       {flights.map((flight, index) => (
         <Flight key={index} flight={flight} />
       ))}

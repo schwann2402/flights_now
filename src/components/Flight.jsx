@@ -57,6 +57,15 @@ const Flight = ({ flight }) => {
             {parseInt(departureTime.slice(0, 3)) >= 12 ? "PM" : "AM"} -{" "}
             {arrivalTime}
             {parseInt(arrivalTime.slice(0, 3)) >= 12 ? "PM" : "AM"}
+            {parseInt(departureTime.slice(0, 3)) +
+              parseInt(duration.slice(0, 3)) >=
+            24 ? (
+              <span style={{ position: "relative", top: -5, fontSize: "10px" }}>
+                +1
+              </span>
+            ) : (
+              ""
+            )}
           </Typography>
           <Typography
             variant="body2"
@@ -111,8 +120,8 @@ const Flight = ({ flight }) => {
         />
       </CardContent>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
-        <CardContent>
-          <Typography paragraph>
+        <CardContent sx={{ display: "flex" }}>
+          <Typography>
             Additional flight details go here. This could include information
             about the aircraft, in-flight amenities, baggage allowance, etc.
           </Typography>
