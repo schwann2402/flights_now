@@ -1,8 +1,4 @@
-# React + Vite
+Responsive website using AirScraper API to simulate Google Flights flight search.
+Frontend was made using ReactJs and Material UI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Loom presentation link: https://www.loom.com/share/29e00cbaba1d48e4af05c0fa322ff6cc?sid=837b4b46-8229-43bf-ba9b-34f8b631e140
