@@ -3,7 +3,7 @@
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 
 import {
   getAirportId,
@@ -78,159 +78,117 @@ const darkTheme = createTheme({
 
 export default function Home({ setResults, setIsLoading }) {
   const [origin, setOrigin] = useState("");
-  const [originInputValue, setOriginInputValue] = useState("");
   const [destination, setDestination] = useState("");
-  const [destinationInputValue, setDestinationInputValue] = useState("");
   const [departureDate, setDepartureDate] = useState(null);
   const [returnDate, setReturnDate] = useState(null);
-  const [destinationOptions, setDestinationOptions] = useState([]);
   const [originOptions, setOriginOptions] = useState([]);
+  const [destinationOptions, setDestinationOptions] = useState([]);
   const [error, setError] = useState(null);
 
-  const fetch = useMemo(
+  const fetchAirportOptions = useMemo(
     () =>
-      debounce(async (input, callback) => {
+      debounce(async (input, setOptions) => {
         try {
           const response = await getAirportOptions(input);
-          callback(response);
+          setOptions(response);
         } catch (error) {
           console.log("Error fetching location", error);
-          callback([]);
+          setOptions([]);
         }
       }, 400),
     []
   );
 
-  useEffect(() => {
-    let active = true;
-
-    if (originInputValue === "") {
-      setOriginOptions(origin ? [origin] : []);
-      return undefined;
-    }
-
-    fetch(originInputValue, (results) => {
-      if (active) {
-        let newOptions = [];
-
-        if (origin) {
-          newOptions = [origin];
-        }
-
-        if (results) {
-          newOptions = [...newOptions, ...results];
-        }
-
-        setOriginOptions(newOptions);
+  const fetchOptions = useCallback(
+    (inputValue, setter, selectedOption) => {
+      if (inputValue === "") {
+        setter(selectedOption ? [selectedOption] : []);
+        return;
       }
-    });
 
-    return () => {
-      active = false;
-    };
-  }, [origin, originInputValue, fetch]);
+      fetchAirportOptions(inputValue, (results) => {
+        const options = selectedOption ? [selectedOption, ...results] : results;
+        setter(options);
+      });
+    },
+    [fetchAirportOptions]
+  );
 
   useEffect(() => {
-    let active = true;
+    fetchOptions(origin, setOriginOptions, origin);
+  }, [origin]);
 
-    if (destinationInputValue === "") {
-      setDestinationOptions(destination ? [destination] : []);
-      return undefined;
-    }
+  useEffect(() => {
+    fetchOptions(destination, setDestinationOptions, destination);
+  }, [destination]);
 
-    fetch(destinationInputValue, (results) => {
-      if (active) {
-        let newOptions = [];
-
-        if (destination) {
-          newOptions = [destination];
-        }
-
-        if (results) {
-          newOptions = [...newOptions, ...results];
-        }
-
-        setDestinationOptions(newOptions);
-      }
-    });
-
-    return () => {
-      active = false;
-    };
-  }, [destination, destinationInputValue, fetch]);
-
-  const getOptionLabel = (option) => {
-    if (typeof option === "string") {
-      return option;
-    }
-    return option.suggestionTitle ? option.suggestionTitle : "";
-  };
-
-  const validateDates = (departureDate, returnDate) => {
-    if (departureDate && returnDate) {
-      if (departureDate.isAfter(returnDate)) {
-        setError("Departure date cannot be later than return date");
-      } else {
-        setError(null);
-      }
+  const handleDepartureDateChange = (date) => {
+    setDepartureDate(date);
+    if (date && returnDate && date.isAfter(returnDate)) {
+      setError("Departure date cannot be later than return date");
     } else {
       setError(null);
     }
   };
 
-  const handleDepartureDateChange = (date) => {
-    setDepartureDate(date);
-    validateDates(date, returnDate);
-  };
-
   const handleReturnDateChange = (date) => {
     setReturnDate(date);
-    validateDates(departureDate, date);
+    if (departureDate && date.isBefore(departureDate)) {
+      setError("Return date cannot be earlier than departure date");
+    } else {
+      setError(null);
+    }
   };
 
   const handleSearch = async (event) => {
     setResults([]);
     setIsLoading(true);
     event.preventDefault();
+
     const formattedDepartureDate = departureDate
       ? departureDate.toISOString().split("T")[0]
       : null;
     const formattedReturnDate = returnDate
       ? returnDate.toISOString().split("T")[0]
       : null;
-    const originInfo = await getAirportId(origin.title);
-    const destinationInfo = await getAirportId(destination.title);
-    const flightDetails = await getFlightDetails(
-      originInfo,
-      destinationInfo,
-      formattedDepartureDate,
-      formattedReturnDate
-    );
-    const results = flightDetails.data.data.itineraries;
-    setIsLoading(false);
-    if (results.length === 0) {
-      setIsLoading("No results");
+
+    try {
+      const originInfo = await getAirportId(origin.title);
+      const destinationInfo = await getAirportId(destination.title);
+      const flightDetails = await getFlightDetails(
+        originInfo,
+        destinationInfo,
+        formattedDepartureDate,
+        formattedReturnDate
+      );
+      const results = flightDetails.data.data.itineraries;
+      setResults(results);
+      setIsLoading(false);
+      if (results.length === 0) setIsLoading("No results");
+    } catch (error) {
+      setIsLoading(false);
+      setError("Error fetching flight details");
+      console.error(error);
     }
-    setResults(results);
   };
 
   return (
     <ThemeProvider theme={darkTheme}>
       <Box sx={{ p: 3 }} bgcolor="background.default">
         <Grid2 container spacing={2}>
-          <Grid2 item xs={12} sm={6} md={4}>
+          <Grid2 xs={12} sm={6} md={4}>
             <Select value="roundtrip" size="small" fullWidth>
               <MenuItem value="roundtrip">Round trip</MenuItem>
               <MenuItem value="oneway">One way</MenuItem>
             </Select>
           </Grid2>
-          <Grid2 item xs={12} sm={6} md={4}>
+          <Grid2 xs={12} sm={6} md={4}>
             <Select value="1" size="small" fullWidth>
               <MenuItem value="1">1 passenger</MenuItem>
               <MenuItem value="2">2 passengers</MenuItem>
             </Select>
           </Grid2>
-          <Grid2 item xs={12} sm={6} md={4}>
+          <Grid2 xs={12} sm={6} md={4}>
             <Select value="economy" size="small" fullWidth>
               <MenuItem value="economy">Economy</MenuItem>
               <MenuItem value="business">Business</MenuItem>
@@ -245,11 +203,11 @@ export default function Home({ setResults, setIsLoading }) {
             alignItems="center"
             sx={{ display: "flex", justifyContent: "space-evenly" }}
           >
-            <Grid2 item xs={12} sm={5}>
+            <Grid2 xs={12} sm={5}>
               <Autocomplete
                 disablePortal
                 options={originOptions}
-                getOptionLabel={getOptionLabel}
+                getOptionLabel={(option) => option.suggestionTitle || option}
                 renderOption={(props, option) => (
                   <li {...props}>
                     <div>
@@ -271,12 +229,12 @@ export default function Home({ setResults, setIsLoading }) {
                   setOrigin(newValue);
                 }}
                 onInputChange={(event, newInputValue) => {
-                  setOriginInputValue(newInputValue);
+                  setOrigin(newInputValue);
                 }}
                 value={origin}
               />
             </Grid2>
-            <Grid2 item xs="auto">
+            <Grid2 xs="auto">
               <IconButton
                 onClick={() => {
                   let a = origin;
@@ -287,12 +245,12 @@ export default function Home({ setResults, setIsLoading }) {
                 <SwapHoriz />
               </IconButton>
             </Grid2>
-            <Grid2 item xs={12} sm={5}>
+            <Grid2 xs={12} sm={5}>
               {" "}
               <Autocomplete
                 disablePortal
                 options={destinationOptions}
-                getOptionLabel={getOptionLabel}
+                getOptionLabel={(option) => option.suggestionTitle || option}
                 renderOption={(props, option) => (
                   <li {...props}>
                     <div>
@@ -316,14 +274,14 @@ export default function Home({ setResults, setIsLoading }) {
                   setDestination(newValue);
                 }}
                 onInputChange={(event, newInputValue) => {
-                  setDestinationInputValue(newInputValue);
+                  setDestination(newInputValue);
                 }}
                 value={destination}
               />
             </Grid2>
 
             <Grid2 container spacing={2}>
-              <Grid2 item xs={12} sm={6} md={3}>
+              <Grid2 xs={12} sm={6} md={3}>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DatePicker
                     label="Departure"
@@ -338,7 +296,7 @@ export default function Home({ setResults, setIsLoading }) {
                   />
                 </LocalizationProvider>
               </Grid2>
-              <Grid2 item xs={12} sm={6} md={3}>
+              <Grid2 xs={12} sm={6} md={3}>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DatePicker
                     label="Return"

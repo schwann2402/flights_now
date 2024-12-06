@@ -56,7 +56,7 @@ const getFlightDetails = async (origin, destination, date, returnDate) => {
       },
     }
   );
-  console.log(response);
+
   return response;
 };
 

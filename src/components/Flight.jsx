@@ -184,7 +184,7 @@ const Flight = ({ flight }) => {
                 {arrivalTime}
                 {parseInt(arrivalTime.slice(0, 3)) >= 12 ? "PM" : "AM"} -{" "}
                 {flight.legs[0].destination.name} ({destinationCode})
-                <Typography
+                <Box
                   sx={{
                     display: "flex",
                     gap: 2,
@@ -193,10 +193,10 @@ const Flight = ({ flight }) => {
                   }}
                 >
                   {airline}
-                  <Typography sx={{ fontSize: "inherit" }}>
+                  <span style={{ fontSize: "inherit" }}>
                     Flight Number {flight.legs[0].segments[0].flightNumber}
-                  </Typography>
-                </Typography>
+                  </span>
+                </Box>
               </Typography>
             </Box>
           </Box>
