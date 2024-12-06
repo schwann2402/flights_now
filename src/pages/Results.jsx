@@ -50,7 +50,15 @@ const Results = ({ flights }) => {
 
   return (
     <Box>
-      <Box sx={{ display: "flex", gap: 1, mb: 3, justifyContent: "center" }}>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 1,
+          mb: 3,
+          justifyContent: "center",
+          flexDirection: { xs: "column", sm: "row" }, // Stack on mobile, row on larger screens
+        }}
+      >
         <Button
           startIcon={<FilterList />}
           variant={
@@ -62,6 +70,7 @@ const Results = ({ flights }) => {
             setStops("");
             setAirline("");
           }}
+          sx={{ mb: { xs: 2, sm: 0 } }}
         >
           All filters
         </Button>
@@ -71,6 +80,7 @@ const Results = ({ flights }) => {
           onClick={() =>
             setSorted(sorted === "priceUp" ? "priceDown" : "priceUp")
           }
+          sx={{ mb: { xs: 2, sm: 0 } }}
         >
           Price {(sorted === "priceUp" || sorted === "") && <ArrowUpward />}
           {sorted === "priceDown" && <ArrowDownward />}

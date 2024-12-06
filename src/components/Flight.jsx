@@ -46,6 +46,7 @@ const Flight = ({ flight }) => {
         "&:hover": {
           cursor: "pointer",
         },
+        padding: { xs: 1, sm: 2 },
       }}
     >
       <CardContent
@@ -53,7 +54,8 @@ const Flight = ({ flight }) => {
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          paddingLeft: 5,
+          flexDirection: { xs: "column", sm: "row" },
+          paddingLeft: 0,
         }}
         onClick={handleExpansion}
       >
@@ -62,20 +64,18 @@ const Flight = ({ flight }) => {
           style={{
             maxWidth: "30px",
             height: "auto",
-            textAlign: "center",
+            marginBottom: 8,
           }}
         />
-        <Box>
+        <Box sx={{ textAlign: { xs: "center", sm: "left" } }}>
           <Typography variant="subtitle1">
             {departureTime}
             {parseInt(departureTime.slice(0, 3)) >= 12 ? "PM" : "AM"} -{" "}
             {arrivalTime}
             {parseInt(arrivalTime.slice(0, 3)) >= 12 ? "PM" : "AM"}
-            {parseInt(departureTime.slice(0, 3)) +
-              parseInt(duration.slice(0, 3)) >=
-            24 ? (
+            {flight.legs[0].timeDeltaInDays > 0 ? (
               <span style={{ position: "relative", top: -5, fontSize: "10px" }}>
-                +1
+                {flight.legs[0].timeDeltaInDays}
               </span>
             ) : (
               ""
@@ -89,12 +89,13 @@ const Flight = ({ flight }) => {
               alignItems: "center",
               gap: 1,
               fontSize: "10px",
+              justifyContent: { xs: "center", sm: "flex-start" },
             }}
           >
             {airline}
           </Typography>
         </Box>
-        <Box>
+        <Box sx={{ textAlign: { xs: "center", sm: "right" } }}>
           <Typography variant="body2" color="text.secondary">
             {duration}
           </Typography>
@@ -106,20 +107,33 @@ const Flight = ({ flight }) => {
               alignItems: "center",
               gap: 1,
               fontSize: "10px",
+              justifyContent: { xs: "center", sm: "flex-start" },
             }}
           >
             {originCode} - {destinationCode}
           </Typography>
         </Box>
 
-        <Typography variant="body2" color="text.secondary">
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ textAlign: { xs: "center", sm: "left" } }}
+        >
           {numOfSegments} stop
           {numOfSegments > 0 ? "s" : ""}
         </Typography>
-        <Typography variant="h6" color="success">
+        <Typography
+          variant="h6"
+          color="success"
+          sx={{ textAlign: { xs: "center", sm: "left" } }}
+        >
           {price}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ textAlign: { xs: "center", sm: "left" } }}
+        >
           round trip
         </Typography>
         {expanded && (
@@ -135,6 +149,7 @@ const Flight = ({ flight }) => {
               color: "black",
               opacity: 0.5,
             },
+            marginTop: { xs: 1, sm: 0 },
           }}
         />
       </CardContent>
@@ -142,8 +157,10 @@ const Flight = ({ flight }) => {
         <CardContent
           sx={{
             display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
             justifyContent: "space-between",
-            paddingX: 10,
+            paddingX: 5,
+            gap: 2,
           }}
         >
           {" "}
@@ -183,19 +200,28 @@ const Flight = ({ flight }) => {
               </Typography>
             </Box>
           </Box>
-          <Box>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
             <Typography
               sx={{
                 display: "inline-block",
+                fontSize: { xs: "12px", sm: "14px" },
               }}
             >
               <AirlineSeatLegroomNormal /> Below average legroom (29in){" "}
             </Typography>
-            <Typography>
+            <Typography
+              sx={{
+                fontSize: { xs: "12px", sm: "14px" },
+              }}
+            >
               <Usb />
               In-seat USB outlet{" "}
             </Typography>
-            <Typography>
+            <Typography
+              sx={{
+                fontSize: { xs: "12px", sm: "14px" },
+              }}
+            >
               <PhoneIphone />
               Stream media to your device
             </Typography>
