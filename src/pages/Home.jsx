@@ -236,13 +236,10 @@ export default function Home({ setResults, setIsLoading }) {
                 sx={{ flexGrow: 1, minWidth: { md: "300px" } }}
                 renderInput={(params) => <TextField {...params} label="From" />}
                 onChange={(event, newValue) => {
-                  console.log(newValue);
                   setOrigin(newValue);
                   setOriginOptions(
                     newValue ? [newValue, ...originOptions] : originOptions
                   );
-
-                  console.log(newValue);
                 }}
                 onInputChange={(event, newInputValue) => {
                   setOrigin(newInputValue);
@@ -276,7 +273,6 @@ export default function Home({ setResults, setIsLoading }) {
                 sx={{ flexGrow: 1, minWidth: { md: "300px" } }}
                 renderInput={(params) => <TextField {...params} label="To" />}
                 onChange={(event, newValue) => {
-                  console.log(newValue);
                   setDestination(newValue);
                   setDestinationOptions(
                     newValue
