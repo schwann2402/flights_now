@@ -131,6 +131,12 @@ export default function Home({ setResults, setIsLoading }) {
     }
   };
 
+  const handleSwap = () => {
+    const temp = origin;
+    setOrigin(destination);
+    setDestination(temp);
+  };
+
   const handleReturnDateChange = (date) => {
     setReturnDate(date);
     if (departureDate && date.isBefore(departureDate)) {
@@ -141,6 +147,7 @@ export default function Home({ setResults, setIsLoading }) {
   };
 
   const handleSearch = async (event) => {
+    console.log(typeof origin == "string", typeof destination);
     setResults([]);
     setIsLoading(true);
     event.preventDefault();
@@ -153,8 +160,14 @@ export default function Home({ setResults, setIsLoading }) {
       : null;
 
     try {
-      const originInfo = await getAirportId(origin.title);
-      const destinationInfo = await getAirportId(destination.title);
+      const originInfo = await getAirportId(
+        typeof origin == "string" ? origin.split("(")[0].trim() : origin.title
+      );
+      const destinationInfo = await getAirportId(
+        typeof destination == "string"
+          ? destination.split("(")[0].trim()
+          : destination.title
+      );
       const flightDetails = await getFlightDetails(
         originInfo,
         destinationInfo,
@@ -223,10 +236,13 @@ export default function Home({ setResults, setIsLoading }) {
                 sx={{ flexGrow: 1, minWidth: { md: "300px" } }}
                 renderInput={(params) => <TextField {...params} label="From" />}
                 onChange={(event, newValue) => {
+                  console.log(newValue);
+                  setOrigin(newValue);
                   setOriginOptions(
                     newValue ? [newValue, ...originOptions] : originOptions
                   );
-                  setOrigin(newValue);
+
+                  console.log(newValue);
                 }}
                 onInputChange={(event, newInputValue) => {
                   setOrigin(newInputValue);
@@ -235,13 +251,7 @@ export default function Home({ setResults, setIsLoading }) {
               />
             </Grid2>
             <Grid2 xs="auto">
-              <IconButton
-                onClick={() => {
-                  let a = origin;
-                  setOrigin(destination);
-                  setDestination(a);
-                }}
-              >
+              <IconButton onClick={handleSwap}>
                 <SwapHoriz />
               </IconButton>
             </Grid2>
@@ -266,12 +276,13 @@ export default function Home({ setResults, setIsLoading }) {
                 sx={{ flexGrow: 1, minWidth: { md: "300px" } }}
                 renderInput={(params) => <TextField {...params} label="To" />}
                 onChange={(event, newValue) => {
+                  console.log(newValue);
+                  setDestination(newValue);
                   setDestinationOptions(
                     newValue
                       ? [newValue, ...destinationOptions]
                       : destinationOptions
                   );
-                  setDestination(newValue);
                 }}
                 onInputChange={(event, newInputValue) => {
                   setDestination(newInputValue);

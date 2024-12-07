@@ -46,6 +46,7 @@ const getFlightDetails = async (origin, destination, date, returnDate) => {
   const originEntity = origin[1];
   const destinationId = destination[0];
   const destinationEntity = destination[1];
+
   const response = await axios.get(
     baseUrl +
       `v2/flights/searchFlights?originSkyId=${originId}&originEntityId=${originEntity}&destinationSkyId=${destinationId}&destinationEntityId=${destinationEntity}&date=${date}&returnDate=${returnDate}`,
